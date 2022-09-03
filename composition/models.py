@@ -30,7 +30,8 @@ class Context:
         for folder in subfolders:
             config_path = os.path.join(folder, "config.json")
             if not os.path.exists(config_path):
-                logging.error("Path: {}, does not have a config.json.")
+                logging.error(f"Path: {config_path}, does not have a config.json.")
+                logging.error("To remedy this you will likely want to delete the folder.")
                 continue
             with open(config_path, "r") as f:
                 configs.append(json.loads(f.read()))
