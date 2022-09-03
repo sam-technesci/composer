@@ -54,11 +54,20 @@ def log_subprocess_output(pipe):
 
 def compose_logs(path, follow, service):
     path = os.path.join(path, "docker-compose.yaml")
-    cmd = ["docker-compose", "-f", path, "logs"]
+    command_to_run = ["docker-compose", "-f", path, "logs"]
     if service is not None:
-        cmd.append(service)
+        command_to_run.append(service)
     if follow:
-        cmd.append("-f")
-    out = unbuffered_command(*cmd)
+        command_to_run.append("-f")
+    out = unbuffered_command(*command_to_run)
     if out != 0:
         logging.error("An error has occurred retrieving logs from application.")
+
+
+def cmd(path, arg_list):
+    path = os.path.join(path, "docker-compose.yaml")
+    command_to_run = ["docker-compose", "-f", path] + arg_list
+    logging.debug(f"Running command: {command_to_run}")
+    out = unbuffered_command(*command_to_run)
+    if out != 0:
+        logging.error(f"An error has occurred running command {arg_list}.")

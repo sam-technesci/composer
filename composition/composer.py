@@ -5,11 +5,13 @@ import sys
 import click
 
 from composition import api, template_cmd, VERSION
+from composition.cmd import cmd
 from composition.install import install_application
 from composition.list_apps import list_applications, setup_default_logging_format
 from composition.logs import logs
 from composition.models import Context
 from composition.storage import create_storage_if_not_exist
+from composition.subapps import subapps
 from composition.uninstall import uninstall_application
 
 
@@ -32,7 +34,8 @@ def install(template="template.yaml", value=None, id=None):
     "allow_extra_args": True
 })
 @click.pass_context
-@click.option("--force", "-f", default=False, flag_value=True, help="Causes the docker-compose down api called to use the force/timeout=0 flag.")
+@click.option("--force", "-f", default=False, flag_value=True,
+              help="Causes the docker-compose down api called to use the force/timeout=0 flag.")
 @click.option("--all", "-a", default=False, flag_value=True, help="Delete all of the installed applications.")
 def delete(ctx, force=False, all=False):
     """
@@ -49,7 +52,8 @@ def delete(ctx, force=False, all=False):
     "allow_extra_args": True
 }, hidden=True)
 @click.pass_context
-@click.option("--force", "-f", default=False, flag_value=True, help="Causes the docker-compose down api called to use the force/timeout=0 flag.")
+@click.option("--force", "-f", default=False, flag_value=True,
+              help="Causes the docker-compose down api called to use the force/timeout=0 flag.")
 @click.option("--all", "-a", default=False, flag_value=True, help="Delete all of the installed applications.")
 def uninstall(ctx, force=False, all=False):
     """
@@ -91,16 +95,45 @@ def version():
     'show_default': True,
     "ignore_unknown_options": True,
     "allow_extra_args": True
-}, hidden=True)
+})
 @click.pass_context
 @click.option("--service", "-s", default=None, help="Get the logs of a specific service in the compose")
-@click.option("--application", "-a", default=None, help="Get the logs for a specific installed composer application ie. name in the app.yaml.")
+@click.option("--application", "-a", default=None,
+              help="Get the logs for a specific installed composer application ie. name in the app.yaml.")
 @click.option("--follow", "-f", default=False, flag_value=True, help="Follow the applications logs for updates.")
 def logs_cmd(ctx, service=None, application=None, follow=False):
     """
     Gets the logs for a given application.
     """
     logs(ctx.args, follow, service, application)
+
+
+@click.command("cmd", context_settings={
+    'show_default': True,
+    "ignore_unknown_options": True,
+    "allow_extra_args": True
+})
+@click.pass_context
+@click.option("--application", "-a", default=None,
+              help="Run the command for a specific installed composer application ie. name in the app.yaml.")
+def other_cmd(ctx, application=None):
+    """
+    Send a command to docker-compose for any other docker compose functions. Format: compose cmd <application_id> <commands> (optional --application=<app_name>)
+    """
+    cmd(ctx.args, application)
+
+
+@click.command("subapps", context_settings={
+    'show_default': True,
+    "ignore_unknown_options": True,
+    "allow_extra_args": True
+})
+@click.pass_context
+def subapps_cmd(ctx):
+    """
+        List the sub-applications under a single application
+    """
+    subapps(ctx.args)
 
 
 @click.group()
@@ -137,6 +170,8 @@ def entrypoint():
     cli.add_command(template_func)
     cli.add_command(version)
     cli.add_command(logs_cmd)
+    cli.add_command(other_cmd)
+    cli.add_command(subapps_cmd)
     # Call the cli
     cli()
 

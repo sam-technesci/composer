@@ -94,6 +94,29 @@ def handle_logs(application_id, follow=False, service=None, application=None):
         api.compose_logs(compose_location, follow, service)
 
 
+def handle_cmd(application_id, arg_list, application=None):
+    logging.debug(f"Application {application_id}, Arguments {arg_list}")
+    location = get_compose_path(application_id)
+    guids = get_application_guids(location)
+    for guid in guids:
+        compose_location = os.path.join(location, guid)
+        application_name = get_name_from_guid(location, guid)
+        if application is not None and application != application_name:
+            logging.debug(f"Skipping logs for {application_name}")
+            # If the user has specified to look for a specific app.yaml name, then skip if its doesn't match
+            continue
+        logging.info(f"Running 'docker-compose {' '.join(arg_list)}'")
+        api.cmd(compose_location, arg_list)
+
+
+def handle_list_subapps(application_id):
+    location = get_compose_path(application_id)
+    guids = get_application_guids(location)
+    for guid in guids:
+        application_name = get_name_from_guid(location, guid)
+        logging.info(application_name)
+
+
 def find_file_paths(target_regex, base=None):
     if base is None:
         base = os.getcwd()
@@ -123,6 +146,3 @@ def recursive_install(template, p: Path, application_id, values):
         return
     logging.debug(f"Found {template_location} performing action INSTALL.")
     install.generate_template(directory, template, app_details, application_id, values)
-
-
-
