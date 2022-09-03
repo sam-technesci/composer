@@ -40,7 +40,7 @@ requires = [
 build-backend = "hatchling.build"
 
 [project]
-name = "composition"
+name = "docker-composition"
 description = "Docker-compose package manager"
 readme = "README.md"
 license = ""
@@ -48,14 +48,18 @@ authors = [
     { name = "sam", email = "sam@fake.com" },
 ]
 dependencies = [
-    "fire",
+    "humanize",
+    "petname",
+    "PyYAML",
+    "Jinja2",
+    "click"
 ]
 dynamic = [
     "version",
 ]
 
 [project.scripts]
-composition = "composition.composition:entrypoint"
+composer = "composition.composer:entrypoint"
 
 [project.urls]
 Homepage = "http://fake.com"
