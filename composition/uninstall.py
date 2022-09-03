@@ -16,7 +16,7 @@ def uninstall_application(application_id_list, force, all):
 
     if not application_id_list:
         logging.error("Please include an id to delete.")
-        logging.error("e.g. composer uninstall -i moon_baboon")
+        logging.error("e.g. composer uninstall moon_baboon")
         sys.exit(1)
     for application_id in application_id_list:
         logging.info(f"Uninstalling {application_id}")

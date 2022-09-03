@@ -7,6 +7,7 @@ import click
 from composition import api, template_cmd, VERSION
 from composition.install import install_application
 from composition.list_apps import list_applications, setup_default_logging_format
+from composition.logs import logs
 from composition.models import Context
 from composition.storage import create_storage_if_not_exist
 from composition.uninstall import uninstall_application
@@ -31,11 +32,11 @@ def install(template="template.yaml", value=None, id=None):
     "allow_extra_args": True
 })
 @click.pass_context
-@click.option("--force", "force", default=False, flag_value=True)
-@click.option("--all", "all", default=False, flag_value=True)
+@click.option("--force", "-f", default=False, flag_value=True, help="Causes the docker-compose down api called to use the force/timeout=0 flag.")
+@click.option("--all", "-a", default=False, flag_value=True, help="Delete all of the installed applications.")
 def delete(ctx, force=False, all=False):
     """
-        Uninstalls a given applications, removing it completely.
+        Uninstalls a given applications (by id unless using --all), removing it completely.
     """
     # Alias for uninstall
 
@@ -48,18 +49,18 @@ def delete(ctx, force=False, all=False):
     "allow_extra_args": True
 }, hidden=True)
 @click.pass_context
-@click.option("--force", "force", default=False, flag_value=True)
-@click.option("--all", "all", default=False, flag_value=True)
+@click.option("--force", "-f", default=False, flag_value=True, help="Causes the docker-compose down api called to use the force/timeout=0 flag.")
+@click.option("--all", "-a", default=False, flag_value=True, help="Delete all of the installed applications.")
 def uninstall(ctx, force=False, all=False):
     """
-    Uninstalls a given applications, removing it completely.
+    Uninstalls a given applications (by id unless using --all), removing it completely.
     """
     uninstall_application(ctx.args, force, all)
 
 
 @click.command("template", context_settings={'show_default': True})
-@click.option("--template", "-t", default="template.yaml", help="The name of the template file to install")
-@click.option("--value", "-v", default=["values.yaml"], help="A list of values YAML files to generate templates from",
+@click.option("--template", "-t", default="template.yaml", help="The name of the template file to install.")
+@click.option("--value", "-v", default=["values.yaml"], help="A list of values YAML files to generate templates from.",
               multiple=True)
 def template_func(template="template.yaml", value=None):
     """
@@ -70,7 +71,7 @@ def template_func(template="template.yaml", value=None):
 
 
 @click.command("list")
-@click.option("--quiet", "quiet", default=False, flag_value=True)
+@click.option("--quiet", "-q", default=False, flag_value=True, help="Print the application name only.")
 def list_all(quiet=False):
     """
     list installed applications
@@ -86,25 +87,45 @@ def version():
     logging.info(f"composer version {VERSION} (pip package docker-composition)")
 
 
+@click.command("logs", context_settings={
+    'show_default': True,
+    "ignore_unknown_options": True,
+    "allow_extra_args": True
+}, hidden=True)
+@click.pass_context
+@click.option("--service", "-s", default=None, help="Get the logs of a specific service in the compose")
+@click.option("--application", "-a", default=None, help="Get the logs for a specific installed composer application ie. name in the app.yaml.")
+@click.option("--follow", "-f", default=False, flag_value=True, help="Follow the applications logs for updates.")
+def logs_cmd(ctx, service=None, application=None, follow=False):
+    """
+    Gets the logs for a given application.
+    """
+    logs(ctx.args, follow, service, application)
+
+
 @click.group()
-@click.option("--verbose", "verbose", default=False, flag_value=True)
-@click.option("--level", default="INFO", type=click.Choice(['DEBUG', 'INFO', 'ERROR']))
+@click.option("--verbose", "-v", default=False, flag_value=True, help="Set log level to DEBUG flag/verbose.")
+@click.option("--level", "-l", default="INFO", type=click.Choice(['DEBUG', 'INFO', 'ERROR']))
 def cli(verbose, level):
-    Context.verbose = verbose
-    if verbose:
-        level = logging.DEBUG
-    # Set the default logging
-    logging.basicConfig(level=level)
-    logging.root.setLevel(level)
-    # Remove the default formatting with log level
-    setup_default_logging_format()
-    # Create the temporary storage if it does not exist
-    create_storage_if_not_exist()
-    # Check docker-compose is installed
-    if not api.is_compose_installed():
-        logging.error("[ERROR] docker-compose is not installed")
-        logging.error("Exiting.")
-        sys.exit(1)
+    try:
+        Context.verbose = verbose
+        if verbose:
+            level = logging.DEBUG
+        # Set the default logging
+        logging.basicConfig(level=level)
+        logging.root.setLevel(level)
+        # Remove the default formatting with log level
+        setup_default_logging_format()
+        # Create the temporary storage if it does not exist
+        create_storage_if_not_exist()
+        # Check docker-compose is installed
+        if not api.is_compose_installed():
+            logging.error("[ERROR] docker-compose is not installed")
+            logging.error("Exiting.")
+            sys.exit(1)
+    except KeyboardInterrupt:
+        logging.info("Exiting on keyboard interrupt.")
+        sys.exit(0)
 
 
 def entrypoint():
@@ -115,6 +136,7 @@ def entrypoint():
     cli.add_command(list_all)
     cli.add_command(template_func)
     cli.add_command(version)
+    cli.add_command(logs_cmd)
     # Call the cli
     cli()
 

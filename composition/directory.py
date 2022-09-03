@@ -49,18 +49,49 @@ def handle_install(template="template.yaml", values=None, application_id=None):
 
 
 def handle_delete(application_id, force=False):
-    location = os.path.join(Path.home(), ".composer", application_id)
-    if not os.path.exists(location):
-        logging.error(f"Could not find application {application_id}")
-        sys.exit(1)
+    location = get_compose_path(application_id)
+    guids = get_application_guids(location)
+    for guid in guids:
+        compose_location = os.path.join(location, guid)
+        api.compose_down(compose_location, application_id, force)
+
+
+def get_application_guids(location):
     with open(os.path.join(location, "config.json"), 'r') as f:
         config = json.loads(f.read())
     guids = [c["guid"] for c in config["apps"]]
     # Reverse the list of guids so the parent is destroyed last
     guids.reverse()
+    return guids
+
+
+def get_compose_path(application_id):
+    location = os.path.join(Path.home(), ".composer", application_id)
+    if not os.path.exists(location):
+        logging.error(f"Could not find application {application_id}")
+        sys.exit(1)
+    return location
+
+
+def get_name_from_guid(location, guid):
+    with open(os.path.join(location, "config.json"), 'r') as f:
+        config = json.loads(f.read())
+    app_id = [c["name"] for c in config["apps"] if c["guid"] == guid][0]
+    return app_id
+
+
+def handle_logs(application_id, follow=False, service=None, application=None):
+    location = get_compose_path(application_id)
+    guids = get_application_guids(location)
     for guid in guids:
         compose_location = os.path.join(location, guid)
-        api.compose_down(compose_location, application_id, force)
+        application_name = get_name_from_guid(location, guid)
+        if application is not None and application != application_name:
+            logging.debug(f"Skipping logs for {application_name}")
+            # If the user has specified to look for a specific app.yaml name, then skip if its doesn't match
+            continue
+        logging.info(f"Logs for: {application_name}")
+        api.compose_logs(compose_location, follow, service)
 
 
 def find_file_paths(target_regex, base=None):

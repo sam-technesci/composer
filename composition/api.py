@@ -38,3 +38,27 @@ def compose_down(path, application_id, force=False):
         logging.warning(f"docker-compose down has failed for app {application_id}")
         logging.warning("Still removing application, but some containers might still persist")
     logging.debug(out)
+
+
+def unbuffered_command(*command_line_args):
+    process = subprocess.Popen(command_line_args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    with process.stdout:
+        log_subprocess_output(process.stdout)
+    return process.wait()  # 0 means success
+
+
+def log_subprocess_output(pipe):
+    for line in iter(pipe.readline, b''):  # b'\n'- separated lines
+        logging.info(line.decode().rstrip('\n'))
+
+
+def compose_logs(path, follow, service):
+    path = os.path.join(path, "docker-compose.yaml")
+    cmd = ["docker-compose", "-f", path, "logs"]
+    if service is not None:
+        cmd.append(service)
+    if follow:
+        cmd.append("-f")
+    out = unbuffered_command(*cmd)
+    if out != 0:
+        logging.error("An error has occurred retrieving logs from application.")
