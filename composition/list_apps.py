@@ -21,6 +21,8 @@ def setup_default_logging_format():
 
 
 def list_applications(quiet):
+    # Get the list of apps before any logging changes
+    apps = Context.get_applications()
     if not quiet:
         setup_column_logging()
         # Print the headings
@@ -36,9 +38,9 @@ def list_applications(quiet):
     # Print the installed applications
     if quiet:
         # Use print to ensure output to stdout
-        [print(app.id, end=" ") for app in Context.get_applications()]
+        [print(app.id, end=" ") for app in apps]
     else:
-        for app in Context.get_applications():  # type: Application
+        for app in apps:  # type: Application
             time_delta = time.time() - app.start_timestamp
             # Utilise logging to set reasonable columns
             logging.info("", extra={"app_id": app.id, "version": app.version, "app_name": app.app_name,

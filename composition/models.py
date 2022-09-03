@@ -30,11 +30,11 @@ class Context:
         for folder in subfolders:
             config_path = os.path.join(folder, "config.json")
             if not os.path.exists(config_path):
-                logging.error(f"Path: {config_path}, does not have a config.json.")
-                logging.error("To remedy this you will likely want to delete the folder.")
-                continue
-            with open(config_path, "r") as f:
-                configs.append(json.loads(f.read()))
+                logging.error(f"Path: {folder}, does not have a config.json.")
+                logging.error("To remedy this you will likely want to delete the above folder.")
+            else:
+                with open(config_path, "r") as f:
+                    configs.append(json.loads(f.read()))
         for config in configs:
             main_compose = config["apps"][0]
             Context._applications.append(
