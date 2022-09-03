@@ -2,6 +2,6 @@ venv/*
 *.egg-info/*
 build/*
 dist/*
-test/*
+local_test/*
 .idea/*
 **/__pycache__/*

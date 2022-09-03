@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  example:
+    image: "busybox"
+    container_name: example_container
+    command: [
+      "echo",
+      "{{ message }}"
+    ]

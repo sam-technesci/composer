@@ -1,0 +1,6 @@
+# The name of the application
+name: "test-application"
+# The version of the application
+version: "1.0.0"
+# If set to true before install all images in the composer will be docker pulled
+alwaysPull: true
