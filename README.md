@@ -1,4 +1,7 @@
 # Installation
+Install python39 and pip3.
+Then do:
+`pip3 install --upgrade docker-composition`
 
 # .deb Creation
 Install
