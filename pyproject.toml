@@ -27,7 +27,7 @@ dynamic = [
 composer = "composition.composer:entrypoint"
 
 [project.urls]
-Homepage = "http://fake.com"
+Homepage = "https://github.com/sam-technesci/composer"
 
 [tool.hatch.version]
 path = "composition/__init__.py"
