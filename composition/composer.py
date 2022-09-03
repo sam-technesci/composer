@@ -83,7 +83,7 @@ def version():
     """
     Print the current version number
     """
-    logging.info(f"{VERSION}")
+    logging.info(f"composer version {VERSION} (pip package docker-composition)")
 
 
 @click.group()
