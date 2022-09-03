@@ -2,7 +2,7 @@
 Still very much in alpha. But a package manager similar to that of helm but for docker-compose applications. <br/>
 Handles sub-applications and values.yaml files with templates similar to that used for kubernetes.yaml files. <br/>
 
-To start you need three files (see examples here:  ): <br/>
+To start you need three files (see examples here: https://github.com/sam-technesci/composer/tree/main/examples): <br/>
 `app.yaml` <br/>
 `template.yaml` <br/>
 `values.yaml` <br/>
