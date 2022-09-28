@@ -21,11 +21,14 @@ from composition.uninstall import uninstall_application
               multiple=True)
 @click.option("--id", "-i", default=None,
               help="Set the application id (must be unique for each installation of an app.")
-def install(template="template.yaml", value=None, id=None):
+@click.option("--set", "-s", default=[], help="An individual value to set e.g. --set foo=bar would be the same as "
+                                              "foo: bar in values.yaml, these will always take precedent over files",
+              multiple=True)
+def install(template="template.yaml", value=None, id=None, set=None):
     """
     Install a docker-compose application using a given template.
     """
-    install_application(template, value, application_id=id)
+    install_application(template, value, application_id=id, manual_values=set)
 
 
 @click.command("delete", context_settings={

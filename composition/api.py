@@ -55,10 +55,10 @@ def log_subprocess_output(pipe):
 def compose_logs(path, follow, service):
     path = os.path.join(path, "docker-compose.yaml")
     command_to_run = ["docker-compose", "-f", path, "logs"]
+    if follow:
+        command_to_run.append("--follow")
     if service is not None:
         command_to_run.append(service)
-    if follow:
-        command_to_run.append("-f")
     out = unbuffered_command(*command_to_run)
     if out != 0:
         logging.error("An error has occurred retrieving logs from application.")
@@ -71,3 +71,9 @@ def cmd(path, arg_list):
     out = unbuffered_command(*command_to_run)
     if out != 0:
         logging.error(f"An error has occurred running command {arg_list}.")
+
+
+def compose_pull(path):
+    command_to_run = ["docker-compose", "-f", path, "pull", "--ignore-pull-failures"]
+    logging.info("Always pull is enabled. Pulling latest images. Will ignore failures of local images.")
+    unbuffered_command(*command_to_run)
