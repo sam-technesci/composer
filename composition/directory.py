@@ -29,9 +29,11 @@ def get_app_details(template):
     return app_details
 
 
-def handle_install(template="template.yaml", values=None, application_id=None):
+def handle_install(template="template.yaml", values=None, application_id=None, manual_values=None):
     if values is None:
         values = ["values.yaml"]
+    if manual_values is None:
+        manual_values = []
     if application_id is None:
         application_id = generate_name()
     logging.debug(f"Values: {values}")
@@ -41,7 +43,7 @@ def handle_install(template="template.yaml", values=None, application_id=None):
     app_name = app_details["name"]
     version = app_details["version"]
     for p in found_paths:
-        recursive_install(template, p, application_id, values)
+        recursive_install(template, p, application_id, values, manual_values)
     # Create the application (it automatically registers itself)
     app = Application(os.getcwd(), app_name, version=version, application_id=application_id)
     logging.info(f"Successfully created installed {app.id}")
@@ -129,7 +131,7 @@ def find_file_paths(target_regex, base=None):
     return found_paths
 
 
-def recursive_install(template, p: Path, application_id, values):
+def recursive_install(template, p: Path, application_id, values, manual_values):
     if values is None:
         values = ["values.yaml"]
     app_details = get_yaml(p)
@@ -145,4 +147,4 @@ def recursive_install(template, p: Path, application_id, values):
         logging.error(f"Could not find file {template_location}, skipping.")
         return
     logging.debug(f"Found {template_location} performing action INSTALL.")
-    install.generate_template(directory, template, app_details, application_id, values)
+    install.generate_template(directory, template, app_details, application_id, values, manual_values)

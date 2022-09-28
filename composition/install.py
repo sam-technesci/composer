@@ -1,5 +1,7 @@
+import json
 import logging
 import os.path
+import re
 import sys
 import traceback
 
@@ -10,11 +12,11 @@ from composition.models import Context
 from composition.storage import get_yaml
 
 
-def install_application(template="template.yaml", values=None, application_id=None):
-    directory.handle_install(template, values, application_id)
+def install_application(template="template.yaml", values=None, application_id=None, manual_values=None):
+    directory.handle_install(template, values, application_id, manual_values)
 
 
-def consolidate_values(values):
+def consolidate_values(values, manual_values):
     all_values = {}
     # First check that we can find all the values files
     for p in values:
@@ -34,7 +36,33 @@ def consolidate_values(values):
             sys.exit(1)
         all_values = merge(all_values, loaded_values)
     # The add the values to consolidated dictionary
+    # Now merge the manual values
+    for string in manual_values:
+        if re.match(r"(.*)=(.*)", string):
+            variable = get_value(string)
+            val_dict = {string.split("=")[0]: variable}
+            all_values = merge(all_values, val_dict)
+        else:
+            logging.error(f"Value {string} must be in format key=value")
+            sys.exit(1)
     return all_values
+
+
+def get_value(string):
+    string = string.split("=")[1]
+    if string.startswith("{"):  # this is likely a dictionary
+        try:
+            return json.loads(string)
+        except json.JSONDecodeError:
+            # If the json decoding fails return it as a string
+            pass
+    if string.lower() == "true":
+        return True
+    if string.lower() == "false":
+        return False
+    if string.isnumeric():
+        return float(string)
+    return string
 
 
 def merge(dict_1, dict_2):
@@ -42,14 +70,14 @@ def merge(dict_1, dict_2):
     return result
 
 
-def generate_template(template_dir, template_file, app_details, application_id, values):
+def generate_template(template_dir, template_file, app_details, application_id, values, manual_values):
     if "name" not in app_details or "version" not in app_details:
         logging.error(f"Invalid app.yaml at {template_dir}.")
         logging.error("Must have a name and version.")
         return
     app_name = app_details["name"]
     logging.info(f"Generating template for {app_name}.")
-    all_values = consolidate_values(values)
+    all_values = consolidate_values(values, manual_values)
     logging.debug(f"Values to apply: {all_values}")
     # Use the values to generate the template
     templateLoader = jinja2.FileSystemLoader(searchpath=template_dir)
@@ -67,15 +95,11 @@ def generate_template(template_dir, template_file, app_details, application_id, 
         sys.exit(1)
     # Save the template in the temp folders, returns the path of the output compose
     compose_path = os.path.join(template_dir, template_file)
+
     path = storage.write_compose(application_id, output_str, app_details, compose_path, template_dir)
 
     if "alwaysPull" in app_details and app_details["alwaysPull"]:
-        logging.info("Always pull is enabled. Pulling latest images.")
-        # If always pull is set
-        # Enumerate all docker images in the compose
-        # Docker pull for each image
-        pass
-
+        api.compose_pull(path)
+    logging.info(f"Starting services for {app_name}, this could take some time.")
     # docker-compose up on the template
     api.compose_up(app_name, path, application_id)
-
