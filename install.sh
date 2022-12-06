@@ -47,7 +47,7 @@ if [ "$DISTRO" == "Amazon" ]; then
     export PIP="/usr/local/bin/pip3.9"
     export PYTHON="/usr/local/bin/python3.9"
 fi
-
+echo "---Docker---"
 if ! command -v docker &> /dev/null
 then
     echo "Docker could not be found, installing it."
@@ -62,9 +62,8 @@ then
       systemctl enable docker
       usermod -aG docker "$USER"
     fi
-
 fi
-
+echo "---Docker Composer---"
 # Check if docker-composer exists
 if ! command -v docker-compose &> /dev/null
 then
@@ -78,7 +77,7 @@ then
       sudo chmod +x /usr/local/bin/docker-compose
     fi
 fi
-echo $PYTHON
+echo "---Python3---"
 # Check if python3 exists
 if ! command -v "$PYTHON" &> /dev/null
 then
@@ -99,10 +98,9 @@ then
       yum install openssl-devel libffi-devel bzip2-devel -y
       ./configure --enable-optimizations
       make altinstall
-      exit
     fi
 fi
-
+echo "---Python3 Version Check---"
 pythonVer=$($PYTHON -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}") if sys.version_info.major < 3 or sys.version_info.major >= 3 and sys.version_info.minor < 9 else print(0)')
 if [[ ! $pythonVer == "0" ]]
 then
@@ -112,6 +110,7 @@ then
     exit 1
 fi
 
+echo "---Composer---"
 # Check if docker-composer exists
 if command -v composer &> /dev/null
 then
@@ -119,4 +118,6 @@ then
 fi
 $PIP install --upgrade docker-composition
 
+echo "---Install complete---"
 echo "Please restart for changes to fully take effect."
+echo ""

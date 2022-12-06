@@ -16,7 +16,8 @@ For more commands do: `composer --help`
 # Installation
 ## Helper Script
 ```bash
-sudo `curl -s -L URL_TO_SCRIPT_HERE | bash`
+curl -fsSL https://public-technesci-bucket.s3.eu-west-1.amazonaws.com/install-composer.sh -o get-composer.sh
+sudo sh get-composer.sh
 ```
 ## Manual 
 Install python39 and pip3.
