@@ -90,7 +90,6 @@ then
       apt-get install -y python3-pip
     fi
     if [ "$DISTRO" == "Amazon" ]; then
-      echo "Compose Amazon Linux TODO."
       wget https://www.python.org/ftp/python/3.9.7/Python-3.9.7.tgz
       tar zxvf Python-3.9.7.tgz
       cd Python-3.9.7/ || exit 1
