@@ -42,10 +42,12 @@ echo "Installation OS: $DISTRO"
 if [ "$DISTRO" == "Ubuntu" ]; then
     export PIP="pip3"
     export PYTHON="python3"
+    export COMPOSE="/usr/bin/docker-compose"
 fi
 if [ "$DISTRO" == "Amazon" ]; then
     export PIP="/usr/local/bin/pip3.9"
     export PYTHON="/usr/local/bin/python3.9"
+    export COMPOSE="/usr/local/bin/docker-compose"
 fi
 echo "---Docker---"
 if ! command -v docker &> /dev/null
@@ -65,7 +67,7 @@ then
 fi
 echo "---Docker Composer---"
 # Check if docker-composer exists
-if ! command -v docker-compose &> /dev/null
+if ! command -v "$COMPOSE" &> /dev/null
 then
     echo "Docker-compose could not be found, installing it."
     if [ "$DISTRO" == "Ubuntu" ]; then
