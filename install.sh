@@ -102,7 +102,8 @@ then
       echo "Doing make install"
       make altinstall
       echo "Cleaning up python install files"
-      rm -rf Python-3.9.7 Python-3.9.7.tgz
+      rm Python-3.9.7.tgz
+      rm -rf Python-3.9.7/
     fi
 fi
 echo "---Python3 Version Check---"
