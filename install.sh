@@ -19,7 +19,7 @@ install_python(){
   if [ "$DISTRO" == "Ubuntu" ]; then
       apt update -y
       apt install -y software-properties-common
-      add-apt-repository ppa:deadsnakes/ppa
+      add-apt-repository -y ppa:deadsnakes/ppa
       apt install -y python3.9
       apt-get install -y python3-pip
     fi
@@ -81,6 +81,11 @@ then
       curl -fsSL https://get.docker.com -o get-docker.sh
       chmod +x get-docker.sh
       sudo sh get-docker.sh
+      systemctl start docker
+      systemctl enable docker
+      # Enable rootless docker
+      usermod -aG docker ssm-user || true
+      usermod -aG docker ec2-user || true
     fi
     if [ "$DISTRO" == "Amazon" ]; then
       yum install -y docker
