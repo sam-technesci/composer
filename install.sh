@@ -39,23 +39,48 @@ fi
 unset UNAME
 
 echo "Installation OS: $DISTRO"
+if [ "$DISTRO" == "Ubuntu" ]; then
+    PIP="pip3"
+    PYTHON="python3"
+fi
+if [ "$DISTRO" == "Amazon" ]; then
+    PIP="pip3.9"
+    PYTHON="python3.9"
+fi
+
+if ! command -v docker &> /dev/null
+then
+    echo "Docker could not be found, installing it."
+    if [ "$DISTRO" == "Ubuntu" ]; then
+      curl -fsSL https://get.docker.com -o get-docker.sh
+      chmod +x get-docker.sh
+      sudo sh get-docker.sh
+    fi
+    if [ "$DISTRO" == "Amazon" ]; then
+      yum install -y docker
+      service docker start
+      systemctl enable docker
+      usermod -aG docker "$USER"
+    fi
+
+fi
 
 # Check if docker-composer exists
 if ! command -v docker-compose &> /dev/null
 then
-    echo "Docker-compose could not be found, installing it. TODO"
+    echo "Docker-compose could not be found, installing it."
     if [ "$DISTRO" == "Ubuntu" ]; then
-      echo "Compose Ubuntu TODO."
+      curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+      sudo chmod +x /usr/local/bin/docker-compose
     fi
     if [ "$DISTRO" == "Amazon" ]; then
-      echo "Compose Amazon Linux TODO."
-      yum install -y docker-compose
+      curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+      sudo chmod +x /usr/local/bin/docker-compose
     fi
-    exit # todo remove
 fi
 
 # Check if python3 exists
-if ! command -v python3 &> /dev/null
+if ! command -v $PYTHON &> /dev/null
 then
     echo "Python 3 could not be found, installing it. TODO"
     if [ "$DISTRO" == "Ubuntu" ]; then
@@ -70,15 +95,14 @@ then
       wget https://www.python.org/ftp/python/3.9.7/Python-3.9.7.tgz
       tar zxvf Python-3.9.7.tgz
       cd Python-3.9.7/ || exit 1
-      sudo yum groupinstall "Development Tools" -y
-      sudo yum install openssl-devel libffi-devel bzip2-devel -y
+      yum groupinstall "Development Tools" -y
+      yum install openssl-devel libffi-devel bzip2-devel -y
       ./configure --enable-optimizations
-      sudo make altinstall
+      make altinstall
     fi
-    exit # todo remove
 fi
 
-pythonVer=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}") if sys.version_info.major < 3 or sys.version_info.major >= 3 and sys.version_info.minor < 9 else print(0)')
+pythonVer=$($PYTHON -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}") if sys.version_info.major < 3 or sys.version_info.major >= 3 and sys.version_info.minor < 9 else print(0)')
 if [[ ! $pythonVer == "0" ]]
 then
     echo "Current Python Version: $pythonVer"
@@ -87,24 +111,11 @@ then
     exit 1
 fi
 
-
-if [ "$DISTRO" == "Ubuntu" ]; then
-    PIP="pip3"
-fi
-if [ "$DISTRO" == "Amazon" ]; then
-    PIP="pip3.9"
-fi
-
 # Check if docker-composer exists
 if command -v composer &> /dev/null
 then
     echo "Composer already exists, updating to latest version."
-    $PIP --upgrade install docker-composition
 fi
+$PIP --upgrade install docker-composition
 
-if [ "$DISTRO" == "Ubuntu" ]; then
-    echo""
-fi
-if [ "$DISTRO" == "Amazon" ]; then
-  echo ""
-fi
+echo "Please restart for changes to fully take effect."
