@@ -117,6 +117,6 @@ if command -v composer &> /dev/null
 then
     echo "Composer already exists, updating to latest version."
 fi
-$PIP --upgrade install docker-composition
+$PIP install --upgrade docker-composition
 
 echo "Please restart for changes to fully take effect."
