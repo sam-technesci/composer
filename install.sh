@@ -40,12 +40,12 @@ unset UNAME
 
 echo "Installation OS: $DISTRO"
 if [ "$DISTRO" == "Ubuntu" ]; then
-    PIP="pip3"
-    PYTHON="python3"
+    export PIP="pip3"
+    export PYTHON="python3"
 fi
 if [ "$DISTRO" == "Amazon" ]; then
-    PIP="pip3.9"
-    PYTHON="python3.9"
+    export PIP="pip3.9"
+    export PYTHON="python3.9"
 fi
 
 if ! command -v docker &> /dev/null
@@ -78,11 +78,11 @@ then
       sudo chmod +x /usr/local/bin/docker-compose
     fi
 fi
-
+echo $PYTHON
 # Check if python3 exists
 if ! command -v $PYTHON &> /dev/null
 then
-    echo "Python 3 could not be found, installing it. TODO"
+    echo "Python 3 could not be found, installing it."
     if [ "$DISTRO" == "Ubuntu" ]; then
       apt update -y
       apt install -y software-properties-common
