@@ -14,6 +14,11 @@ Defaults to using values.yaml in the same directory. <br/>
 To view your template before installing it you can do `composer template` or you can save a template with `composer template > docker-compose.yaml` <br/>
 For more commands do: `composer --help`
 # Installation
+## Helper Script
+```bash
+curl -fsSL https://raw.githubusercontent.com/sam-technesci/composer/installation-helper/install.sh -o get-composer.sh && sudo sh get-composer.sh
+```
+## Manual 
 Install python39 and pip3.
 Then do:
 `pip3 install --upgrade docker-composition`
