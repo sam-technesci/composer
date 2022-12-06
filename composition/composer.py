@@ -69,12 +69,15 @@ def uninstall(ctx, force=False, all=False):
 @click.option("--template", "-t", default="template.yaml", help="The name of the template file to install.")
 @click.option("--value", "-v", default=["values.yaml"], help="A list of values YAML files to generate templates from.",
               multiple=True)
-def template_func(template="template.yaml", value=None):
+@click.option("--set", "-s", default=[], help="An individual value to set e.g. --set foo=bar would be the same as "
+                                              "foo: bar in values.yaml, these will always take precedent over files",
+              multiple=True)
+def template_func(template="template.yaml", value=None, set=None):
     """
     Prints the output docker_compose.yaml once the values have been applied. Can be used to produce a compose for use
     outside of the composer install environment
     """
-    template_cmd.template(template, value)
+    template_cmd.template(template, value, manual_values=set)
 
 
 @click.command("list")

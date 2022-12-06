@@ -9,8 +9,10 @@ from composition.install import consolidate_values
 from composition.models import Context
 
 
-def template(template_file="template.yaml", values=None):
-    all_values = consolidate_values(values)
+def template(template_file="template.yaml", values=None, manual_values=None):
+    if manual_values is None:
+        manual_values = []
+    all_values = consolidate_values(values, manual_values)
     # Use the values to generate the template
     templateLoader = jinja2.FileSystemLoader(searchpath=os.getcwd())
     templateEnv = jinja2.Environment(loader=templateLoader)
