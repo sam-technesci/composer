@@ -96,8 +96,12 @@ then
       cd Python-3.9.7/ || exit 1
       yum groupinstall "Development Tools" -y
       yum install openssl-devel libffi-devel bzip2-devel -y
+      echo "Configuring make"
       ./configure --enable-optimizations
+      echo "Doing make install"
       make altinstall
+      echo "Cleaning up python install files"
+      rm -rf Python-3.9.7 Python-3.9.7.tgz
     fi
 fi
 echo "---Python3 Version Check---"

@@ -16,7 +16,7 @@ For more commands do: `composer --help`
 # Installation
 ## Helper Script
 ```bash
-curl -fsSL https://public-technesci-bucket.s3.eu-west-1.amazonaws.com/install-composer.sh -o get-composer.sh
+curl -fsSL https://raw.githubusercontent.com/sam-technesci/composer/installation-helper/install.sh -o get-composer.sh
 sudo sh get-composer.sh
 ```
 ## Manual 
