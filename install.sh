@@ -45,12 +45,13 @@ if ! command -v docker-compose &> /dev/null
 then
     echo "Docker-compose could not be found, installing it. TODO"
     if [ "$DISTRO" == "Ubuntu" ]; then
-      echo "Ubuntu TODO."
+      echo "Compose Ubuntu TODO."
     fi
     if [ "$DISTRO" == "Amazon" ]; then
-      echo "Amazon Linux TODO."
+      echo "Compose Amazon Linux TODO."
+      yum install -y docker-compose
     fi
-    exit
+    exit # todo remove
 fi
 
 # Check if python3 exists
@@ -64,7 +65,17 @@ then
       apt install -y python3.9
       apt-get install -y python3-pip
     fi
-    exit
+    if [ "$DISTRO" == "Amazon" ]; then
+      echo "Compose Amazon Linux TODO."
+      wget https://www.python.org/ftp/python/3.9.7/Python-3.9.7.tgz
+      tar zxvf Python-3.9.7.tgz
+      cd Python-3.9.7/ || exit 1
+      sudo yum groupinstall "Development Tools" -y
+      sudo yum install openssl-devel libffi-devel bzip2-devel -y
+      ./configure --enable-optimizations
+      sudo make altinstall
+    fi
+    exit # todo remove
 fi
 
 pythonVer=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}") if sys.version_info.major < 3 or sys.version_info.major >= 3 and sys.version_info.minor < 9 else print(0)')
@@ -77,11 +88,23 @@ then
 fi
 
 
-
+if [ "$DISTRO" == "Ubuntu" ]; then
+    PIP="pip3"
+fi
+if [ "$DISTRO" == "Amazon" ]; then
+    PIP="pip3.9"
+fi
 
 # Check if docker-composer exists
 if command -v composer &> /dev/null
 then
     echo "Composer already exists, updating to latest version."
+    $PIP --upgrade install docker-composition
+fi
 
+if [ "$DISTRO" == "Ubuntu" ]; then
+    echo""
+fi
+if [ "$DISTRO" == "Amazon" ]; then
+  echo ""
 fi
