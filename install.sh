@@ -15,6 +15,30 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
+install_python(){
+  if [ "$DISTRO" == "Ubuntu" ]; then
+      apt update -y
+      apt install -y software-properties-common
+      add-apt-repository ppa:deadsnakes/ppa
+      apt install -y python3.9
+      apt-get install -y python3-pip
+    fi
+    if [ "$DISTRO" == "Amazon" ]; then
+      wget https://www.python.org/ftp/python/3.9.7/Python-3.9.7.tgz
+      tar zxvf Python-3.9.7.tgz
+      cd Python-3.9.7/ || exit 1
+      yum groupinstall "Development Tools" -y
+      yum install openssl-devel libffi-devel bzip2-devel -y
+      echo "Configuring make"
+      ./configure --enable-optimizations
+      echo "Doing make install"
+      make altinstall
+      echo "Cleaning up python install files"
+      rm Python-3.9.7.tgz
+      rm -rf Python-3.9.7/
+    fi
+}
+
 # Determine OS platform
 UNAME=$(uname | tr "[:upper:]" "[:lower:]")
 # If Linux, try to determine specific distribution
@@ -62,7 +86,9 @@ then
       yum install -y docker
       service docker start
       systemctl enable docker
-      usermod -aG docker "$USER"
+      # Enable rootless docker
+      usermod -aG docker ssm-user || true
+      usermod -aG docker ec2-user || true
     fi
 fi
 echo "---Docker Composer---"
@@ -84,27 +110,7 @@ echo "---Python3---"
 if ! command -v "$PYTHON" &> /dev/null
 then
     echo "Python 3 could not be found, installing it."
-    if [ "$DISTRO" == "Ubuntu" ]; then
-      apt update -y
-      apt install -y software-properties-common
-      add-apt-repository ppa:deadsnakes/ppa
-      apt install -y python3.9
-      apt-get install -y python3-pip
-    fi
-    if [ "$DISTRO" == "Amazon" ]; then
-      wget https://www.python.org/ftp/python/3.9.7/Python-3.9.7.tgz
-      tar zxvf Python-3.9.7.tgz
-      cd Python-3.9.7/ || exit 1
-      yum groupinstall "Development Tools" -y
-      yum install openssl-devel libffi-devel bzip2-devel -y
-      echo "Configuring make"
-      ./configure --enable-optimizations
-      echo "Doing make install"
-      make altinstall
-      echo "Cleaning up python install files"
-      rm Python-3.9.7.tgz
-      rm -rf Python-3.9.7/
-    fi
+    install_python
 fi
 echo "---Python3 Version Check---"
 pythonVer=$($PYTHON -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}") if sys.version_info.major < 3 or sys.version_info.major >= 3 and sys.version_info.minor < 9 else print(0)')
@@ -112,8 +118,7 @@ if [[ ! $pythonVer == "0" ]]
 then
     echo "Current Python Version: $pythonVer"
     echo "Required Python Version: 3.9 or later"
-    echo "Exiting."
-    exit 1
+    install_python
 fi
 
 echo "---Composer---"
