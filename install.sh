@@ -15,6 +15,7 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
+# Function for installing python
 install_python(){
   if [ "$DISTRO" == "Ubuntu" ]; then
       apt update -y
@@ -136,4 +137,5 @@ $PIP install --upgrade docker-composition
 
 echo "---Install complete---"
 echo "Please restart for changes to fully take effect."
+echo "At minimum run newgrp docker as your current user."
 echo ""
