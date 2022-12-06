@@ -44,8 +44,8 @@ if [ "$DISTRO" == "Ubuntu" ]; then
     export PYTHON="python3"
 fi
 if [ "$DISTRO" == "Amazon" ]; then
-    export PIP="pip3.9"
-    export PYTHON="python3.9"
+    export PIP="/usr/local/bin/pip3.9"
+    export PYTHON="/usr/local/bin/python3.9"
 fi
 
 if ! command -v docker &> /dev/null
@@ -92,13 +92,13 @@ then
     fi
     if [ "$DISTRO" == "Amazon" ]; then
       echo "Compose Amazon Linux TODO."
-#      wget https://www.python.org/ftp/python/3.9.7/Python-3.9.7.tgz
-#      tar zxvf Python-3.9.7.tgz
-#      cd Python-3.9.7/ || exit 1
-#      yum groupinstall "Development Tools" -y
-#      yum install openssl-devel libffi-devel bzip2-devel -y
-#      ./configure --enable-optimizations
-#      make altinstall
+      wget https://www.python.org/ftp/python/3.9.7/Python-3.9.7.tgz
+      tar zxvf Python-3.9.7.tgz
+      cd Python-3.9.7/ || exit 1
+      yum groupinstall "Development Tools" -y
+      yum install openssl-devel libffi-devel bzip2-devel -y
+      ./configure --enable-optimizations
+      make altinstall
       exit
     fi
 fi
