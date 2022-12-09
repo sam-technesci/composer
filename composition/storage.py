@@ -112,8 +112,6 @@ def write_compose(application_id, output_str, app_details, compose_path, templat
         f = configmap["filename"]
         content = configmap["content"]
         conf_path = os.path.join(compose_path, os.path.basename(f))
-        # delete the existing file
-        os.remove(conf_path)
         # Write new file
         with open(conf_path, "w") as f:
             f.write(content)

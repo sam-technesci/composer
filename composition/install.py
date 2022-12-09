@@ -6,6 +6,7 @@ import sys
 import traceback
 
 import jinja2 as jinja2
+from jinja2 import Template
 
 from composition import directory, storage, api
 from composition.models import Context
@@ -70,19 +71,20 @@ def merge(dict_1, dict_2):
     return result
 
 
-def generate_config_maps(template_env, all_values):
+def generate_config_maps(template_dir, all_values):
     config_strs = []
-    config_files = directory.find_file_paths("*.configmap")
+    config_files = directory.find_file_paths("*.configmap", base=template_dir)
     logging.debug(f"Config maps found: {config_files}")
     for conf in config_files:
         # The path is local so get the filename
-        string = generate_template_str(template_env, os.path.basename(conf), all_values)
+        string = generate_template_str(conf, all_values)
         config_strs.append({"filename": conf, "content": string})
     return config_strs
 
 
-def generate_template_str(template_env, template_file, values):
-    template = template_env.get_template(template_file)
+def generate_template_str(template_file, values):
+    with open(template_file) as f:
+        template = Template(f.read())
     try:
        return template.render(values)
     except jinja2.exceptions.TemplateError as e:
@@ -95,6 +97,7 @@ def generate_template_str(template_env, template_file, values):
         sys.exit(1)
 
 def generate_template(template_dir, template_file, app_details, application_id, values, manual_values):
+    template_file = os.path.join(template_dir, template_file)
     if "name" not in app_details or "version" not in app_details:
         logging.error(f"Invalid app.yaml at {template_dir}.")
         logging.error("Must have a name and version.")
@@ -103,13 +106,10 @@ def generate_template(template_dir, template_file, app_details, application_id, 
     logging.info(f"Generating template for {app_name}.")
     all_values = consolidate_values(values, manual_values)
     logging.debug(f"Values to apply: {all_values}")
-    # Use the values to generate the template
-    templateLoader = jinja2.FileSystemLoader(searchpath=template_dir)
-    template_env = jinja2.Environment(loader=templateLoader)
-    # first generate configmap files
-    config_strs = generate_config_maps(template_env, all_values)
+    # First generate configmap files
+    config_strs = generate_config_maps(template_dir, all_values)
     # generate the docker-compose file
-    output_str = generate_template_str(template_env, template_file, all_values)
+    output_str = generate_template_str(template_file, all_values)
     # Save the template in the temp folders, returns the path of the output compose
     compose_path = os.path.join(template_dir, template_file)
 
