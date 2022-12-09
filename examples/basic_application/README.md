@@ -42,3 +42,6 @@ example_container | Hello again, with a different message.
 ```
 
 Jinja is a very powerful templating language, you can easily add different services based on values.yaml or deploy different images into different environments etc.
+
+### Templating config
+You can also template config files, i.e. outside of template.yaml by using the configmap file extension. e.g. `my-json.configmap` and then using Jinja templating.
