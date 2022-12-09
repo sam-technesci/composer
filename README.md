@@ -78,6 +78,8 @@ include = [
 ]
 ```
 
+Note: remember to update `__version__.py` <br/>
+Then run: <br/>
 `sudo hatch build && sudo hatch publish`
 
 # Generating requirements

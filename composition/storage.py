@@ -87,7 +87,7 @@ def append_to_app_config(app_details, application_id):
             f.write(json.dumps(json_out))
 
 
-def write_compose(application_id, output_str, app_details, compose_path, template_dir):
+def write_compose(application_id, output_str, app_details, compose_path, template_dir, config_strs):
     application_path = os.path.join(Path.home(), ".composer", application_id)
     if not os.path.exists(application_path):
         os.mkdir(application_path)
@@ -107,6 +107,16 @@ def write_compose(application_id, output_str, app_details, compose_path, templat
     path = os.path.join(compose_path, "docker-compose.yaml")
     with open(path, "w") as f:
         f.write(output_str)
+    # now write the config maps replacing the existing ones
+    for configmap in config_strs:
+        f = configmap["filename"]
+        content = configmap["content"]
+        conf_path = os.path.join(compose_path, f)
+        # delete the existing file
+        os.remove(conf_path)
+        # Write new file
+        with open(conf_path, "w") as f:
+            f.write(content)
     return path
 
 
