@@ -70,6 +70,30 @@ def merge(dict_1, dict_2):
     return result
 
 
+def generate_config_maps(template_env, all_values):
+    config_strs = []
+    config_files = directory.find_file_paths("*.configmap")
+    logging.debug(f"Config maps found: {config_files}")
+    for conf in config_files:
+        # The path is local so get the filename
+        string = generate_template_str(template_env, os.path.basename(conf), all_values)
+        config_strs.append({"filename": conf, "content": string})
+    return config_strs
+
+
+def generate_template_str(template_env, template_file, values):
+    template = template_env.get_template(template_file)
+    try:
+       return template.render(values)
+    except jinja2.exceptions.TemplateError as e:
+        logging.error("Error when rendering template.")
+        logging.error(f"Message: {e.message}")
+        if Context.verbose:
+            logging.error(traceback.format_exc())
+        else:
+            logging.error("Enable --verbose flag for more details.")
+        sys.exit(1)
+
 def generate_template(template_dir, template_file, app_details, application_id, values, manual_values):
     if "name" not in app_details or "version" not in app_details:
         logging.error(f"Invalid app.yaml at {template_dir}.")
@@ -81,22 +105,15 @@ def generate_template(template_dir, template_file, app_details, application_id, 
     logging.debug(f"Values to apply: {all_values}")
     # Use the values to generate the template
     templateLoader = jinja2.FileSystemLoader(searchpath=template_dir)
-    templateEnv = jinja2.Environment(loader=templateLoader)
-    template = templateEnv.get_template(template_file)
-    try:
-        output_str = template.render(all_values)
-    except jinja2.exceptions.TemplateError as e:
-        logging.error("Error when rendering template.")
-        logging.error(f"Message: {e.message}")
-        if Context.verbose:
-            logging.error(traceback.format_exc())
-        else:
-            logging.error("Enable --verbose flag for more details.")
-        sys.exit(1)
+    template_env = jinja2.Environment(loader=templateLoader)
+    # first generate configmap files
+    config_strs = generate_config_maps(template_env, all_values)
+    # generate the docker-compose file
+    output_str = generate_template_str(template_env, template_file, all_values)
     # Save the template in the temp folders, returns the path of the output compose
     compose_path = os.path.join(template_dir, template_file)
 
-    path = storage.write_compose(application_id, output_str, app_details, compose_path, template_dir)
+    path = storage.write_compose(application_id, output_str, app_details, compose_path, template_dir, config_strs)
 
     if "alwaysPull" in app_details and app_details["alwaysPull"]:
         api.compose_pull(path)

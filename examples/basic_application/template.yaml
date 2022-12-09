@@ -7,3 +7,14 @@ services:
       "echo",
       "{{ message }}"
     ]
+  example-config:
+    image: "busybox"
+    container_name: example_container_config
+    command: [
+      "cat",
+      "/dev/config.json"
+    ]
+    volumes:
+      - type: bind
+        source: "./test.configmap"
+        target: "/dev/config.json"
