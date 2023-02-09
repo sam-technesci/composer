@@ -16,7 +16,7 @@ For more commands do: `composer --help`
 # Installation
 ## Helper Script
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sam-technesci/composer/main/install.sh -o get-composer.sh && sudo sh get-composer.sh
+curl -fsSL https://raw.githubusercontent.com/sam-technesci/composer/main/install.sh -o get-composer.sh && sudo /bin/bash get-composer.sh
 ```
 ## Manual 
 Install python39 and pip3.
