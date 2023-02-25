@@ -5,3 +5,5 @@ dist/*
 local_test/*
 .idea/*
 **/__pycache__/*
+**/.pytest_cache/*
+.pytest_cache/*

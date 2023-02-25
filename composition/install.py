@@ -13,8 +13,8 @@ from composition.models import Context
 from composition.storage import get_yaml
 
 
-def install_application(template="template.yaml", values=None, application_id=None, manual_values=None):
-    directory.handle_install(template, values, application_id, manual_values)
+def install_application(template="template.yaml", values=None, application_id=None, manual_values=None, always_pull=None):
+    directory.handle_install(template, values, application_id, manual_values, always_pull=always_pull)
 
 
 def consolidate_values(values, manual_values):
@@ -96,7 +96,7 @@ def generate_template_str(template_file, values):
             logging.error("Enable --verbose flag for more details.")
         sys.exit(1)
 
-def generate_template(template_dir, template_file, app_details, application_id, values, manual_values):
+def generate_template(template_dir, template_file, app_details, application_id, values, manual_values, always_pull):
     template_file = os.path.join(template_dir, template_file)
     if "name" not in app_details or "version" not in app_details:
         logging.error(f"Invalid app.yaml at {template_dir}.")
@@ -115,8 +115,22 @@ def generate_template(template_dir, template_file, app_details, application_id, 
 
     path = storage.write_compose(application_id, output_str, app_details, compose_path, template_dir, config_strs)
 
-    if "alwaysPull" in app_details and app_details["alwaysPull"]:
-        api.compose_pull(path)
+    handle_always_pull(always_pull, app_details, path)
+
     logging.info(f"Starting services for {app_name}, this could take some time.")
     # docker-compose up on the template
     api.compose_up(app_name, path, application_id)
+
+
+def handle_always_pull(always_pull, app_details, path):
+    if always_pull is None:
+        if "alwaysPull" in app_details and app_details["alwaysPull"]:
+            logging.info("Always pull is set to true in app config.")
+            api.compose_pull(path)
+        else:
+            logging.info("Always pull is set to false in app config. Continuing.")
+    elif always_pull and always_pull.lower().strip() == "true":
+        logging.info("Always pull has been overridden manually and is enabled.")
+        api.compose_pull(path)
+    else:
+        logging.info("Always pull has been overridden manually and is disabled.")

@@ -24,11 +24,12 @@ from composition.uninstall import uninstall_application
 @click.option("--set", "-s", default=[], help="An individual value to set e.g. --set foo=bar would be the same as "
                                               "foo: bar in values.yaml, these will always take precedent over files",
               multiple=True)
-def install(template="template.yaml", value=None, id=None, set=None):
+@click.option("--always_pull", "-p", default=None, help="If set will override the settings in app.yaml to dictate if the application should always pull the latest containers.")
+def install(template="template.yaml", value=None, id=None, set=None, always_pull=None):
     """
     Install a docker-compose application using a given template.
     """
-    install_application(template, value, application_id=id, manual_values=set)
+    install_application(template, value, application_id=id, manual_values=set, always_pull=always_pull)
 
 
 @click.command("delete", context_settings={

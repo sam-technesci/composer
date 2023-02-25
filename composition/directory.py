@@ -29,7 +29,7 @@ def get_app_details(template):
     return app_details
 
 
-def handle_install(template="template.yaml", values=None, application_id=None, manual_values=None):
+def handle_install(template="template.yaml", values=None, application_id=None, manual_values=None, always_pull=None):
     if values is None:
         values = ["values.yaml"]
     if manual_values is None:
@@ -43,7 +43,7 @@ def handle_install(template="template.yaml", values=None, application_id=None, m
     app_name = app_details["name"]
     version = app_details["version"]
     for p in found_paths:
-        recursive_install(template, p, application_id, values, manual_values)
+        recursive_install(template, p, application_id, values, manual_values, always_pull)
     # Create the application (it automatically registers itself)
     app = Application(os.getcwd(), app_name, version=version, application_id=application_id)
     logging.info(f"Successfully created installed {app.id}")
@@ -59,7 +59,7 @@ def handle_delete(application_id, force=False):
 
 
 def get_application_guids(location):
-    with open(os.path.join(location, "config.json"), 'r') as f:
+    with open(os.path.join(location, "config.json"), 'rb') as f:
         config = json.loads(f.read())
     guids = [c["guid"] for c in config["apps"]]
     # Reverse the list of guids so the parent is destroyed last
@@ -76,7 +76,7 @@ def get_compose_path(application_id):
 
 
 def get_name_from_guid(location, guid):
-    with open(os.path.join(location, "config.json"), 'r') as f:
+    with open(os.path.join(location, "config.json"), 'rb') as f:
         config = json.loads(f.read())
     app_id = [c["name"] for c in config["apps"] if c["guid"] == guid][0]
     return app_id
@@ -131,7 +131,7 @@ def find_file_paths(target_regex, base=None):
     return found_paths
 
 
-def recursive_install(template, p: Path, application_id, values, manual_values):
+def recursive_install(template, p: Path, application_id, values, manual_values, always_pull):
     if values is None:
         values = ["values.yaml"]
     app_details = get_yaml(p)
@@ -147,4 +147,4 @@ def recursive_install(template, p: Path, application_id, values, manual_values):
         logging.error(f"Could not find file {template_location}, skipping.")
         return
     logging.debug(f"Found {template_location} performing action INSTALL.")
-    install.generate_template(directory, template, app_details, application_id, values, manual_values)
+    install.generate_template(directory, template, app_details, application_id, values, manual_values, always_pull)
