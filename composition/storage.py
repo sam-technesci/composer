@@ -88,7 +88,7 @@ def append_to_app_config(app_details, application_id):
 
 
 def write_compose(application_id, output_str, app_details, compose_path, template_dir, config_strs):
-    application_path = os.path.join(Path.home(), ".composer", application_id)
+    application_path = get_compose_loc(application_id)
     if not os.path.exists(application_path):
         os.mkdir(application_path)
     # Use a UUID as we can have multiple composes per app and we don't want them to overlap
@@ -98,7 +98,7 @@ def write_compose(application_id, output_str, app_details, compose_path, templat
     app_details["timestamp"] = time.time()
     app_details["compose_name"] = compose_path
     append_to_app_config(app_details, application_id)
-    compose_path = os.path.join(application_path, guid)
+    compose_path = get_compose_path(application_path, guid)
     # Copy all files from current directory
     # Unless they are in .composer_ignore
     ignore_contents = get_ignore_contents()
@@ -110,12 +110,22 @@ def write_compose(application_id, output_str, app_details, compose_path, templat
     # now write the config maps replacing the existing ones
     for configmap in config_strs:
         f = configmap["filename"]
+        # This ensures the subpath is maintained in the target directory
+        correct_subpath = Path(f).relative_to(template_dir)
         content = configmap["content"]
-        conf_path = os.path.join(compose_path, os.path.basename(f))
+        conf_path = os.path.join(compose_path, correct_subpath)
         # Write new file
         with open(conf_path, "w") as f:
             f.write(content)
     return path
+
+
+def get_compose_path(application_path, guid):
+    return os.path.join(application_path, guid)
+
+
+def get_compose_loc(application_id):
+    return os.path.join(Path.home(), ".composer", application_id)
 
 
 def remove(application_id):
@@ -128,7 +138,7 @@ def get_ignore_contents():
     ignore_file = join(os.getcwd(), ".composerignore")
     if not os.path.exists(ignore_file):
         return []
-    with open(ignore_file, 'r') as f:
+    with open(ignore_file, 'rb') as f:
         return f.readlines()
 
 
