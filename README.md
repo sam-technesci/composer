@@ -1,3 +1,14 @@
+# THIS IS NOW DEPRECATED AND NO LONGER SUPPORTED
+# PLEASE USE composer-rust
+# https://github.com/ByteSquid/composer-rust
+# .
+# .
+# .
+# .
+# .
+# .
+# .
+# .
 # Description
 Still very much in alpha. But a package manager similar to that of helm but for docker-compose applications. <br/>
 Handles sub-applications and values.yaml files with templates similar to that used for kubernetes.yaml files. <br/>
